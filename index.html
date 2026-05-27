@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>⚡ Pull-Up Quest 12Weeks</title>
     <style>
         :root {
@@ -11,13 +11,14 @@
             --accent-color: #e94560;
             --text-color: #ffffff;
             --success-color: #0fbc74;
+            --gray-color: #8a99ad;
         }
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -32,54 +33,115 @@
             box-sizing: border-box;
         }
         h1 { text-align: center; color: var(--accent-color); font-size: 24px; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #8a99ad; font-size: 14px; margin-top: 0; }
+        .subtitle { text-align: center; color: var(--gray-color); font-size: 13px; margin-top: 0; margin-bottom: 20px; }
         
-        /* 주차 선택 및 디데이 */
-        .status-box {
+        /* 대시보드 및 진척도 */
+        .dashboard {
             background: rgba(255,255,255,0.05);
-            padding: 12px;
+            padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
-            text-align: center;
+        }
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
         }
         select {
             background: var(--bg-color);
             color: white;
             border: 1px solid var(--accent-color);
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
         }
+        .progress-container {
+            width: 100%;
+            background: #2b3b5c;
+            border-radius: 10px;
+            height: 18px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--success-color));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 18px;
+            color: white;
+            top: 0;
+        }
 
-        /* 퀘스트 카드 */
-        .quest-card {
-            border-left: 5px solid var(--accent-color);
+        /* 날짜별 로그 생성 버튼 */
+        .add-log-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(233, 69, 96, 0.3);
+        }
+
+        /* 운동 기록 카드 */
+        .day-log-card {
             background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
             padding: 15px;
-            border-radius: 0 10px 10px 0;
+            margin-bottom: 20px;
+        }
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .day-date { font-weight: bold; color: #ffd700; font-size: 16px; }
+        .delete-btn {
+            background: none; border: none; color: #ff4a4a; cursor: pointer; font-size: 12px;
+        }
+        
+        .quest-item {
             margin-bottom: 15px;
         }
-        .quest-title { font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #fff; }
-        .quest-desc { font-size: 13px; color: #a0aec0; margin-bottom: 12px; }
+        .quest-item:last-child { margin-bottom: 0; }
+        .quest-title { font-weight: bold; font-size: 14px; margin-bottom: 6px; color: #fff; }
         
         /* 세트 버튼 그리드 */
-        .btn-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-grid { display: flex; gap: 6px; flex-wrap: wrap; }
         .set-btn {
             flex: 1;
-            min-width: 60px;
-            padding: 12px;
+            min-width: 50px;
+            padding: 10px;
             background: #2b3b5c;
             border: none;
             color: white;
-            border-radius: 8px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
         }
         .set-btn.done {
             background: var(--success-color);
-            box-shadow: 0 0 8px var(--success-color);
+            box-shadow: 0 0 6px var(--success-color);
         }
 
         /* 팝업 축하 레이어 */
@@ -94,82 +156,90 @@
         }
         .reward-box {
             background: var(--card-bg);
-            padding: 30px;
+            padding: 25px;
             border-radius: 20px;
             text-align: center;
             border: 2px solid var(--accent-color);
+            max-width: 300px;
             animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .reward-box h2 { color: #ffd700; margin-top: 0; font-size: 28px; }
-        .reward-box p { font-size: 16px; margin-bottom: 20px; }
+        .reward-box h2 { color: #ffd700; margin-top: 0; font-size: 24px; }
+        .reward-box p { font-size: 15px; margin-bottom: 15px; }
         .close-btn {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
+            background: var(--accent-color); color: white; border: none;
+            padding: 8px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;
         }
         @keyframes pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .no-log { text-align: center; color: var(--gray-color); font-size: 14px; padding: 30px 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>⚡ PULL-UP QUEST</h1>
-    <p class="subtitle">일자바 맨몸 풀업을 위한 12주의 여정</p>
+    <p class="subtitle">주 3회 짬짬이 채우는 등판 인벤토리</p>
 
-    <div class="status-box">
-        <label for="week-select">현재 진행 주차: </label>
-        <select id="week-select" onchange="changeWeek()">
-            <!-- 1주차부터 12주차까지 자동 생성 -->
-        </select>
+    <!-- 대시보드 -->
+    <div class="dashboard">
+        <div class="control-row">
+            <select id="week-select" onchange="changeWeek()">
+                <!-- 1~12주차 자동생성 -->
+            </select>
+            <div id="week-count" style="font-size: 13px; font-weight: bold;">이번 주 완료 세트: 0개</div>
+        </div>
+        <!-- 진척도 바 -->
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+            <div id="progress-text" class="progress-text">전체 진척도 0% (0 / 132 세트)</div>
+        </div>
     </div>
 
-    <!-- 주차별 미션이 렌더링될 영역 -->
-    <div id="quest-container"></div>
+    <!-- 오늘 운동 기록 추가 버튼 -->
+    <button class="add-log-btn" onclick="addNewLog()">🏋️‍♂️ 오늘 운동 시작하기 (날짜 추가)</button>
+
+    <!-- 날짜별 퀘스트 생성 영역 -->
+    <div id="logs-container"></div>
 </div>
 
-<!-- 축하 팝업 리워드 -->
+<!-- 축하 팝업 -->
 <div id="reward-overlay" class="reward-overlay">
     <div class="reward-box">
         <h2>🎉 QUEST CLEAR!</h2>
         <p id="reward-text">완벽하게 1세트를 채우셨습니다!</p>
-        <button class="close-btn" onclick="closeReward()">보상 수령하기</button>
+        <button class="close-btn" onclick="closeReward()">보상 수령</button>
     </div>
 </div>
 
 <script>
-    // 12주차 전체 프로그램 데이터 구축
+    // 12주차 전체 미션 가이드
     const programData = {
-        phase1: { // 1~4주차
+        phase1: {
             name: "1단계: 등판 기초 및 네거티브 버티기",
             quests: [
-                { id: "q1", title: "🎯 네거티브 풀업 (5초 버티기)", desc: "1세트당 5회 수행 / 하루 총 4세트 짬짬이 채우기", totalSets: 4 },
-                { id: "q2", title: "🦅 케틀벨 원 암 로우", desc: "1세트당 좌우 각 10~12회 / 하루 총 4세트", totalSets: 4 },
-                { id: "q3", title: "✊ 데드행 (철봉 매달리기)", desc: "1세트당 전력을 다해 버티기 / 하루 총 3세트", totalSets: 3 }
+                { id: "q1", title: "🎯 네거티브 풀업 (5초) x 5회", totalSets: 4 },
+                { id: "q2", title: "🦅 케틀벨 원 암 로우 x 10~12회", totalSets: 4 },
+                { id: "q3", title: "✊ 데드행 (철봉 매달리기) 전력", totalSets: 3 }
             ]
         },
-        phase2: { // 5~8주차
+        phase2: {
             name: "2단계: 이완과 수축의 연결",
             quests: [
-                { id: "q1", title: "🚀 점프 풀업 + 네거티브 혼합", desc: "1세트당 연속 3~4회 / 하루 총 4세트", totalSets: 4 },
-                { id: "q2", title: "🪵 인버티드 로우 (공원 낮은 철봉)", desc: "1세트당 8회 / 하루 총 4세트", totalSets: 4 },
-                { id: "q3", title: "🏋️‍♂️ 케틀벨 더블 로우", desc: "1세트당 12kg 두 개로 6~8회 / 하루 총 3세트", totalSets: 3 }
+                { id: "q1", title: "🚀 점프 풀업 + 네거티브 혼합 x 3~4회", totalSets: 4 },
+                { id: "q2", title: "🪵 인버티드 로우 (공원 낮은 철봉) x 8회", totalSets: 4 },
+                { id: "q3", title: "🏋️‍♂️ 케틀벨 더블 로우 x 6~8회", totalSets: 3 }
             ]
         },
-        phase3: { // 9~12주차
+        phase3: {
             name: "3단계: 일자바 맨몸 풀업 도전",
             quests: [
-                { id: "q1", title: "🦅 숄더 패킹 풀업 (견갑 하강)", desc: "1세트당 8회 / 하루 총 3세트", totalSets: 3 },
-                { id: "q2", title: "🎗️ 밴드 풀업", desc: "1세트당 정석 자세로 5회 / 하루 총 4세트", totalSets: 4 },
-                { id: "q3", title: "👑 맨몸 풀업 1회 측정", desc: "첫 세트 실패 시 즉시 네거티브로 전환 / 하루 총 3세트", totalSets: 3 }
+                { id: "q1", title: "🦅 숄더 패킹 풀업 (견갑 하강) x 8회", totalSets: 3 },
+                { id: "q2", title: "🎗️ 밴드 풀업 x 5회", totalSets: 4 },
+                { id: "q3", title: "👑 맨몸 풀업 1회 도전", totalSets: 3 }
             ]
         }
     };
 
-    // 응원 문구 모음
     const cheers = [
         "등 근육이 폭발하고 있습니다! 🔥",
         "올해 안에 무조건 풀업 성공각! 😎",
@@ -178,7 +248,7 @@
         "완벽해요! 샤워할 때 거울 한번 보세요! 📸"
     ];
 
-    // 주차 선택 내역 셀렉트박스 초기화
+    // 주차 선택바 세팅
     const select = document.getElementById('week-select');
     for(let i=1; i<=12; i++) {
         let opt = document.createElement('option');
@@ -187,92 +257,170 @@
         select.appendChild(opt);
     }
 
-    // 로컬 스토리지에서 저장된 주차 가져오기 (기본값 1주차)
-    let currentWeek = localStorage.getItem('pullup_current_week') ? parseInt(localStorage.getItem('pullup_current_week')) : 1;
+    // 데이터 복원 및 초기화
+    let currentWeek = localStorage.getItem('p_current_week') ? parseInt(localStorage.getItem('p_current_week')) : 1;
     select.value = currentWeek;
 
-    // 현재 상태 데이터 저장 구조 (LocalStorage 연동)
-    let userProgress = JSON.parse(localStorage.getItem('pullup_user_progress')) || {};
+    // 핵심 데이터: { "w1": [ { id: 1716812345, date: "05/27(수)", q1: [false, false, false, false], ... } ] }
+    let questLogs = JSON.parse(localStorage.getItem('p_quest_logs')) || {};
 
-    // 주차 변경 함수
     function changeWeek() {
         currentWeek = parseInt(document.getElementById('week-select').value);
-        localStorage.setItem('pullup_current_week', currentWeek);
-        renderQuests();
+        localStorage.setItem('p_current_week', currentWeek);
+        render();
     }
 
-    // 현재 주차에 맞는 단계(Phase) 반환 함수
-    function getPhaseData(week) {
+    function getPhase(week) {
         if(week <= 4) return programData.phase1;
         if(week <= 8) return programData.phase2;
         return programData.phase3;
     }
 
-    // 화면 그리기 (렌더링)
-    function renderQuests() {
-        const phase = getPhaseData(currentWeek);
-        const container = document.getElementById('quest-container');
+    // 새 날짜 추가하기
+    function addNewLog() {
+        const now = new Date();
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        const dateStr = `${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}(${days[now.getDay()]})`;
         
-        let html = `<h3 style="color:#8a99ad; margin-bottom:15px; font-size:15px;">${phase.name}</h3>`;
+        const phase = getPhase(currentWeek);
+        const newLog = {
+            id: Date.now(),
+            date: dateStr,
+        };
         
-        phase.quests.forEach(quest => {
-            // 사용자 진행 내역 키 조합 (예: w1_q1)
-            const progressKey = `w${currentWeek}_${quest.id}`;
-            if (!userProgress[progressKey]) {
-                userProgress[progressKey] = Array(quest.totalSets).fill(false);
-            }
-            
-            html += `
-                <div class="quest-card">
-                    <div class="quest-title">${quest.title}</div>
-                    <div class="quest-desc">${quest.desc}</div>
-                    <div class="btn-grid">
-            `;
-            
-            for(let setIdx=0; setIdx < quest.totalSets; setIdx++) {
-                const isDone = userProgress[progressKey][setIdx];
-                html += `
-                    <button class="set-btn ${isDone ? 'done' : ''}" onclick="toggleSet('${progressKey}', ${setIdx})">
-                        ${setIdx + 1}세트
-                    </button>
-                `;
-            }
-            
-            html += `</div></div>`;
+        // 해당 단계 퀘스트별로 세트 배열 초기화
+        phase.quests.forEach(q => {
+            newLog[q.id] = Array(q.totalSets).fill(false);
         });
-        
-        container.innerHTML = html;
-        localStorage.setItem('pullup_user_progress', JSON.stringify(userProgress));
-    }
 
-    // 세트 완료 토글 기능
-    function toggleSet(progressKey, setIdx) {
-        // 이미 완료된 걸 해제할 때는 팝업 없이 상태만 변경
-        const wasDone = userProgress[progressKey][setIdx];
-        userProgress[progressKey][setIdx] = !wasDone;
-        
-        // 새로 체크(완료)했을 때만 축하 보상 팝업 발생
-        if(!wasDone) {
-            showReward();
+        if(!questLogs[`w${currentWeek}`]) {
+            questLogs[`w${currentWeek}`] = [];
         }
         
-        renderQuests();
+        // 최신 날짜가 맨 위에 오도록 배열 앞에 추가
+        questLogs[`w${currentWeek}`].unshift(newLog);
+        saveAndRender();
     }
 
-    // 보상 팝업 띄우기
+    // 날짜 삭제
+    function deleteLog(id) {
+        if(confirm("이 날짜의 운동 기록을 삭제하시겠습니까?")) {
+            questLogs[`w${currentWeek}`] = questLogs[`w${currentWeek}`].filter(log => log.id !== id);
+            saveAndRender();
+        }
+    }
+
+    // 세트 토글
+    function toggleSet(logId, questId, setIdx) {
+        const logs = questLogs[`w${currentWeek}`];
+        const log = logs.find(l => l.id === logId);
+        if(log && log[questId]) {
+            const wasDone = log[questId][setIdx];
+            log[questId][setIdx] = !wasDone;
+            if(!wasDone) {
+                showReward();
+            }
+            saveAndRender();
+        }
+    }
+
     function showReward() {
-        const randomCheer = cheers[Math.floor(Math.random() * cheers.length)];
-        document.getElementById('reward-text').innerText = randomCheer;
+        document.getElementById('reward-text').innerText = cheers[Math.floor(Math.random() * cheers.length)];
         document.getElementById('reward-overlay').style.display = 'flex';
     }
 
-    // 팝업 닫기
     function closeReward() {
         document.getElementById('reward-overlay').style.display = 'none';
     }
 
-    // 최초 실행
-    renderQuests();
+    function saveAndRender() {
+        localStorage.setItem('p_quest_logs', JSON.stringify(questLogs));
+        render();
+    }
+
+    // 화면 렌더링 및 진척도 계산
+    function render() {
+        const phase = getPhase(currentWeek);
+        const container = document.getElementById('logs-container');
+        const logs = questLogs[`w${currentWeek}`] || [];
+        
+        // 1. 이번 주 완료 세트 계산
+        let weekDoneCount = 0;
+        logs.forEach(log => {
+            phase.quests.forEach(q => {
+                if(log[q.id]) {
+                    weekDoneCount += log[q.id].filter(Boolean).length;
+                }
+            });
+        });
+        document.getElementById('week-count').innerText = `이번 주 완료 세트: ${weekDoneCount}개`;
+
+        // 2. 전체 진척도 계산 (총 12주차 x 주 3회 완료 기준 완벽 도달 세트수 계산)
+        // 주 3회 목표 완료 기준 전체 총 세트 수 계산 (1~4주 11세트*3, 5~8주 11세트*3, 9~12주 10세트*3 -> 총 132세트)
+        const totalTargetSets = 132; 
+        let totalDoneCount = 0;
+        
+        for(let w=1; w<=12; w++) {
+            const wLogs = questLogs[`w${w}`] || [];
+            const wPhase = getPhase(w);
+            wLogs.forEach(log => {
+                wPhase.quests.forEach(q => {
+                    if(log[q.id]) {
+                        totalDoneCount += log[q.id].filter(Boolean).length;
+                    }
+                });
+            });
+        }
+        
+        const progressPercent = Math.min(Math.round((totalDoneCount / totalTargetSets) * 100), 100);
+        document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+        document.getElementById('progress-text').innerText = `전체 진척도 ${progressPercent}% (${totalDoneCount} / ${totalTargetSets} 세트)`;
+
+        // 3. 로그 리스트 그리기
+        if(logs.length === 0) {
+            container.innerHTML = `<div class="no-log">아래 버튼을 눌러 오늘 날짜의 퀘스트를 생성하세요!<br><span style="font-size:12px; color:#55657e;">(${phase.name})</span></div>`;
+            return;
+        }
+
+        let html = `<h3 style="color:var(--gray-color); font-size:14px; margin-bottom:12px;">${phase.name}</h3>`;
+        
+        logs.forEach(log => {
+            html += `
+                <div class="day-log-card">
+                    <div class="day-header">
+                        <div class="day-date">📅 ${log.date}</div>
+                        <button class="delete-btn" onclick="deleteLog(${log.id})">삭제</button>
+                    </div>
+            `;
+            
+            phase.quests.forEach(q => {
+                const currentSets = log[q.id] || Array(q.totalSets).fill(false);
+                html += `
+                    <div class="quest-item">
+                        <div class="quest-title">${q.title}</div>
+                        <div class="btn-grid">
+                `;
+                
+                for(let i=0; i<q.totalSets; i++) {
+                    const isDone = currentSets[i];
+                    html += `
+                        <button class="set-btn ${isDone ? 'done' : ''}" onclick="toggleSet(${log.id}, '${q.id}', ${i})">
+                            ${i+1}set
+                        </button>
+                    `;
+                }
+                
+                html += `</div></div>`;
+            });
+            
+            html += `</div>`;
+        });
+        
+        container.innerHTML = html;
+    }
+
+    // 첫 실행
+    render();
 </script>
 
 </body>
